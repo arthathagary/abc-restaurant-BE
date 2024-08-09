@@ -1,12 +1,13 @@
-const express = require("express");
-const app = express();
+const app = require("./app");
+const connectDB = require("./config/database");
 
-require("dotenv").config();
+const dotenv = require("dotenv");
+const path = require("path");
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+dotenv.config({ path: path.join(__dirname, "config/config.env") });
+
+connectDB();
 
 app.listen(process.env.PORT, () => {
-  console.log(`Example app listening on port ${process.env.PORT}`);
+  console.log(`App listen on ${process.env.PORT}`);
 });
