@@ -10,11 +10,11 @@ const Reservation = require("../models/Reservation");
  */
 const createReservation = async (req, res, next) => {
   // Destructure the request body
-  const { userId, serviceId, date, time, guests, specialRequests } = req.body;
+  const { userId, date, time, guests, specialRequests } = req.body;
 
   try {
     // Check if all required fields are provided in a single line
-    if (!userId || !serviceId || !date || !time || !guests) {
+    if (!userId  || !date || !time || !guests) {
       // Return an error response if any required field is missing
       return res.status(400).json({ error: "All fields are mandatory" });
     }
@@ -22,7 +22,6 @@ const createReservation = async (req, res, next) => {
     // Create the reservation in the database using create method that accepts an object
     const reservation = await Reservation.create({
       userId,
-      serviceId,
       date,
       time,
       guests,
@@ -52,9 +51,8 @@ const getReservationById = async (req, res, next) => {
     const { id } = req.params;
 
     // Retrieve the reservation from the database, including the user and service details.
-    const reservation = await Reservation.findById(id)
+    const reservation = await Reservation.find({userId:id})
       .populate("userId", "name email") // Populate the 'userId' field with the 'name' and 'email' fields from the 'User' model.
-      .populate("serviceId", "name description"); // Populate the 'serviceId' field with the 'name' and 'description' fields from the 'Service' model.
 
     // If the reservation is not found, return a 404 error.
     if (!reservation) {
@@ -138,9 +136,34 @@ const deleteReservation = async (req, res, next) => {
   }
 };
 
+//Get all reservation
+const getAllReservation = async (req, res, next) => {
+  try {
+    const reservations = await Reservation.find().populate({
+      path: 'userId',
+      select: 'email'
+    });
+    const transformedReservations = reservations.map(reservation => {
+      const userEmail = reservation.userId ? reservation.userId.email : null;
+      const userId = reservation.userId ? reservation.userId._id : null;
+
+      return {
+        ...reservation.toObject(),
+        userEmail,
+        userId
+      };
+    });
+    res.status(200).json(transformedReservations);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createReservation,
   getReservationById,
   updateReservation,
   deleteReservation,
+  getAllReservation
 };

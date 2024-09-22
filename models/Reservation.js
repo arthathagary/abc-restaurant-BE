@@ -6,11 +6,6 @@ const reservationSchema = new mongoose.Schema({
     ref: "User",
     required: [true, "User ID is required"],
   },
-  serviceId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Service",
-    required: [true, "Service ID is required"],
-  },
   date: {
     type: Date,
     required: [true, "Reservation date is required"],

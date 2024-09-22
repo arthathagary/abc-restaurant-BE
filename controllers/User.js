@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 // Create a new user
 const createUser = async (req, res, next) => {
   try {
-    const { name, email, password, phone, address } = req.body;
+    const { name, email, password, phone, address,role } = req.body;
 
     // Check if all required fields are provided
     if (!(name && email && password && phone)) {
@@ -28,6 +28,7 @@ const createUser = async (req, res, next) => {
       password: hashedPassword,
       phone,
       address,
+      role
     });
 
     // Generate a JWT token
@@ -39,12 +40,13 @@ const createUser = async (req, res, next) => {
       }
     );
 
-    // Assign token to user and hide password field
+    // Assign token to user and hide password field'
+    console.log("token---> ", token)
     user.token = token;
     user.password = undefined;
 
     // Return the created user with the token
-    res.status(201).json(user);
+    res.status(201).json({user:user,token:token});
   } catch (error) {
     if (error.code === 11000) {
       res.status(400).json({ error: "Email already in use" });
@@ -104,7 +106,35 @@ const userLogin = async (req, res, next) => {
   }
 };
 
+//get all users
+const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+//delete user by id
+const deleteUserById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createUser,
   userLogin,
+  getAllUsers,
+  deleteUserById
 };
